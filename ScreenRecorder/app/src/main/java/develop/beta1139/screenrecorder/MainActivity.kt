@@ -40,7 +40,7 @@ class MainActivity : AppCompatActivity() {
     private var mediaProjection: MediaProjection? = null
     private var virtualDisplay: VirtualDisplay? = null
     private var screenDensity = 0
-    private var mediaRecorder: MediaRecorder? = null
+    private val mediaRecorder = MediaRecorder()
     private var videoUri: String = ""
 
     init {
@@ -58,7 +58,6 @@ class MainActivity : AppCompatActivity() {
         windowManager.defaultDisplay.getMetrics(metrics)
         screenDensity = metrics.densityDpi
 
-        mediaRecorder = MediaRecorder()
         mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
 
         binding.toggleButton.setOnClickListener {
@@ -95,8 +94,8 @@ class MainActivity : AppCompatActivity() {
             initRecorder()
             recordScreen()
         } else {
-            mediaRecorder?.stop()
-            mediaRecorder?.reset()
+            mediaRecorder.stop()
+            mediaRecorder.reset()
             stopRecordScreen()
 
             binding.videoView.visibility = View.VISIBLE
@@ -118,30 +117,30 @@ class MainActivity : AppCompatActivity() {
     private fun createVirtualDisplay(): VirtualDisplay? {
         return mediaProjection?.createVirtualDisplay("MainActivity", DISPLAY_WIDTH, DISPLAY_HEIGHT, screenDensity,
                 DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-                mediaRecorder?.surface, null, null)
+                mediaRecorder.surface, null, null)
     }
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     private fun initRecorder() {
         try {
-            mediaRecorder?.setAudioSource(MediaRecorder.AudioSource.MIC)
-            mediaRecorder?.setVideoSource(MediaRecorder.VideoSource.SURFACE)
-            mediaRecorder?.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
+            mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
+            mediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE)
+            mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
 
             videoUri = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() +
                     StringBuilder("/EDMT_Record_").append(SimpleDateFormat("dd-MM-yyyy-hh_mm_ss", Locale.getDefault()).format(Date())).append("mp4").toString()
 
-            mediaRecorder?.setOutputFile(videoUri)
-            mediaRecorder?.setVideoSize(DISPLAY_WIDTH, DISPLAY_HEIGHT)
-            mediaRecorder?.setVideoEncoder(MediaRecorder.VideoEncoder.H264)
-            mediaRecorder?.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
-            mediaRecorder?.setVideoEncodingBitRate(1500 * 1000)
-            mediaRecorder?.setVideoFrameRate(30)
+            mediaRecorder.setOutputFile(videoUri)
+            mediaRecorder.setVideoSize(DISPLAY_WIDTH, DISPLAY_HEIGHT)
+            mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264)
+            mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
+            mediaRecorder.setVideoEncodingBitRate(1500 * 1000)
+            mediaRecorder.setVideoFrameRate(30)
 
             val rotation = windowManager.defaultDisplay.rotation
             val orientation = ORIENTATIONS.get(rotation + 90)
-            mediaRecorder?.setOrientationHint(orientation)
-            mediaRecorder?.prepare()
+            mediaRecorder.setOrientationHint(orientation)
+            mediaRecorder.prepare()
         } catch (e: IOException) {
             e.printStackTrace()
         }
@@ -167,7 +166,7 @@ class MainActivity : AppCompatActivity() {
         mediaProjection = mediaProjectionManager?.getMediaProjection(resultCode, data)
         mediaProjection?.registerCallback(mediaProjectionCallback, null)
         virtualDisplay = createVirtualDisplay()
-        mediaRecorder?.start()
+        mediaRecorder.start()
     }
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
@@ -198,8 +197,8 @@ class MainActivity : AppCompatActivity() {
         override fun onStop() {
             if (binding.toggleButton.isChecked) {
                 binding.toggleButton.isChecked = false
-                mediaRecorder?.stop()
-                mediaRecorder?.reset()
+                mediaRecorder.stop()
+                mediaRecorder.reset()
             }
             mediaProjection = null
             stopRecordScreen()
